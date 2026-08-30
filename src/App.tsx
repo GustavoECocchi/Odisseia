@@ -1,5 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useCallback, useEffect, useState } from "react";
+import * as THREE from "three";
 import { OdysseyScene } from "./game/OdysseyScene";
 import type { CaveStage, GameMode } from "./game/types";
 import { useKeyboard } from "./game/useKeyboard";
@@ -54,7 +55,7 @@ export function App() {
   return (
     <main className="experience">
       <Canvas
-        shadows
+        shadows={{ type: THREE.PCFShadowMap }}
         dpr={[1, 1.5]}
         camera={{ position: [0, 11.5, 22.5], fov: 42, near: 0.1, far: 180 }}
         gl={{ antialias: true, powerPreference: "high-performance" }}

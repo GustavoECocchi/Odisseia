@@ -47,7 +47,7 @@ export function Boat({
       if (throttle !== 0) {
         speed.current += throttle * 4.1 * dt;
       } else {
-        speed.current *= Math.exp(-1.55 * dt);
+        speed.current *= Math.exp(-2.7 * dt);
       }
 
       speed.current = THREE.MathUtils.clamp(speed.current, -2.1, 5.4);
@@ -63,28 +63,42 @@ export function Boat({
         0,
         -Math.cos(heading.current),
       );
-      const previous = motion.current.position.clone();
       motion.current.position.addScaledVector(forward, speed.current * dt);
+
+      const BOUNDARY_X = 32;
+      const BOUNDARY_Z_MIN = -42;
+      const BOUNDARY_Z_MAX = 26;
+      const outsideBoundary =
+        motion.current.position.x < -BOUNDARY_X ||
+        motion.current.position.x > BOUNDARY_X ||
+        motion.current.position.z < BOUNDARY_Z_MIN ||
+        motion.current.position.z > BOUNDARY_Z_MAX;
 
       motion.current.position.x = THREE.MathUtils.clamp(
         motion.current.position.x,
-        -32,
-        32,
+        -BOUNDARY_X,
+        BOUNDARY_X,
       );
       motion.current.position.z = THREE.MathUtils.clamp(
         motion.current.position.z,
-        -42,
-        26,
+        BOUNDARY_Z_MIN,
+        BOUNDARY_Z_MAX,
       );
 
-      const islandDistance = Math.hypot(
-        motion.current.position.x - ISLAND_CENTER.x,
-        motion.current.position.z - ISLAND_CENTER.y,
-      );
+      if (outsideBoundary) {
+        speed.current *= Math.exp(-6 * dt);
+      }
 
-      if (islandDistance < 7.2) {
-        motion.current.position.copy(previous);
-        speed.current *= -0.18;
+      const ISLAND_RADIUS = 7.2;
+      const islandDx = motion.current.position.x - ISLAND_CENTER.x;
+      const islandDz = motion.current.position.z - ISLAND_CENTER.y;
+      const islandDistance = Math.hypot(islandDx, islandDz);
+
+      if (islandDistance < ISLAND_RADIUS) {
+        const pushBack = ISLAND_RADIUS / Math.max(islandDistance, 0.001);
+        motion.current.position.x = ISLAND_CENTER.x + islandDx * pushBack;
+        motion.current.position.z = ISLAND_CENTER.y + islandDz * pushBack;
+        speed.current *= Math.exp(-8 * dt);
       }
 
       const near = islandDistance < 20.5;

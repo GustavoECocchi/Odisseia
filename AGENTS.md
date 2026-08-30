@@ -33,7 +33,7 @@ O encerramento deve auditar o estado real, validar o projeto, atualizar
 - Usar Meshy para assets principais e geometria procedural como fallback.
 - Registrar assets externos e suas licenças em `ASSET_CREDITS.md`.
 
-## Status atual — 29 de julho de 2026
+## Status atual — 30 de agosto de 2026
 
 - ✅ App React Three Fiber criado.
 - ✅ Barco navegável por WASD e setas.
@@ -46,20 +46,26 @@ O encerramento deve auditar o estado real, validar o projeto, atualizar
 - ⏳ Assets do Meshy ainda não foram gerados ou integrados.
 - ⚠️ O bundle principal tem aproximadamente 1,16 MB antes de gzip e ainda precisa de
   divisão por cena.
-- ⚠️ O servidor de desenvolvimento registra avisos de depreciação de `THREE.Clock` e
-  `PCFSoftShadowMap`; não quebram o protótipo, mas devem ser avaliados ao estabilizar as
-  versões de Three/R3F.
-- ⚠️ O workspace não possui checkout Git funcional: `.git` está vazio.
-- ⚠️ `gh auth status` informa token inválido para `GustavoECocchi`; nenhum commit ou push
-  foi realizado no encerramento desta sessão.
+- ⚠️ O servidor de desenvolvimento registra aviso de depreciação de `THREE.Clock`
+  (interno ao `@react-three/fiber`); não quebra o protótipo. O aviso de
+  `PCFSoftShadowMap` foi eliminado (ver abaixo).
+- ✅ Checkout Git funcional criado; `gh auth status` válido para `GustavoECocchi`.
+- ✅ Primeiro commit publicado em `GustavoECocchi/Odisseia` (branch `main`).
+- ✅ Inércia/colisão do barco, iluminação, shader do mar e pós-processamento (bloom)
+  revisados. Ver detalhes em `odisseu-3d-projeto.md` → "Polimento de movimentação e
+  gráficos (30 de agosto de 2026)".
+- ⚠️ Bug real encontrado e corrigido: `<Environment preset="sunset">` dependia de um
+  HDRI externo cujo fetch podia ficar pendente para sempre, travando o `Suspense` e
+  deixando a tela preta sem erro no console. O componente foi removido.
 
 ## Roadmap imediato
 
-1. Restaurar a autenticação com `gh auth login -h github.com`.
-2. Criar um checkout funcional de `GustavoECocchi/Odisseia` e importar o workspace.
-3. Revisar, commitar e publicar o vertical slice atual.
-4. Validar manualmente e automatizar o puzzle completo de Polifemo.
-5. Gerar o barco no Meshy a partir de `docs/asset-prompts.md`.
-6. Integrar o GLB mantendo o barco procedural como fallback.
-7. Dividir o bundle por cena antes de adicionar os outros GLBs.
-8. Avaliar os avisos de depreciação de Three/R3F.
+1. Jogar manualmente numa janela Chrome focada para validar a sensação de
+   movimentação (não confirmado por automação — CDP sofre throttling de rAF em aba
+   sem foco real).
+2. Validar manualmente e automatizar o puzzle completo de Polifemo (objetos 3D podem
+   ficar atrás do HUD nessa câmera — mapear pontos de clique corretos).
+3. Gerar o barco no Meshy a partir de `docs/asset-prompts.md`.
+4. Integrar o GLB mantendo o barco procedural como fallback.
+5. Dividir o bundle por cena antes de adicionar os outros GLBs.
+6. Avaliar o aviso de depreciação de `THREE.Clock`.

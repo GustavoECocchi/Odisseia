@@ -240,7 +240,7 @@ nos momentos de maior impacto.
 
 ## Estado atual da implementação
 
-**Última atualização:** 29 de julho de 2026
+**Última atualização:** 30 de agosto de 2026
 
 O primeiro vertical slice está em desenvolvimento no workspace
 `/home/gustavoecocchi/Downloads/odisseia`.
@@ -249,13 +249,10 @@ O primeiro vertical slice está em desenvolvimento no workspace
 
 - GitHub: https://github.com/GustavoECocchi/Odisseia
 - Repositório remoto público, branch padrão `main`.
-- O remoto estava vazio quando foi inspecionado.
-- Os arquivos atuais ainda estão somente no workspace e não foram publicados no GitHub.
-- O diretório `.git` disponível no workspace está vazio e não constitui um checkout Git
-  funcional. Não presumir que os arquivos já estejam versionados.
-- No encerramento de 29 de julho de 2026, `gh auth status` informou que o token ativo de
-  `GustavoECocchi` era inválido. Por isso, não houve commit nem push. Para retomar a
-  publicação, executar `gh auth login -h github.com` e criar um checkout Git funcional.
+- Em 30 de agosto de 2026, `gh auth status` confirmou sessão válida de `GustavoECocchi`.
+- Checkout Git funcional criado no workspace (`git init`, branch `main`).
+- Primeiro commit publicado (`fc0cd78`, 31 arquivos) com `git push -u origin main`.
+  O remoto deixou de estar vazio.
 
 ### Stack instalada
 
@@ -292,6 +289,13 @@ O primeiro vertical slice está em desenvolvimento no workspace
 - Biblioteca inicial de prompts do Meshy criada em `docs/asset-prompts.md`.
 - Registro de licenças criado em `ASSET_CREDITS.md`.
 - Comando de continuidade `/encerrar-sessao` criado e validado.
+- Inércia do barco mais firme ao soltar as teclas e colisões suaves (ilha e bordas do
+  mapa reduzem a velocidade gradualmente em vez de travar/quicar).
+- Iluminação da cena marítima revisada (menos luz ambiente plana, `hemisphereLight`
+  adicionada, sombras com `PCFShadowMap` explícito) para mais contraste no low-poly.
+- Shader do mar com brilho especular do sol, leve efeito fresnel e espuma nas cristas
+  das ondas.
+- Pós-processamento (`@react-three/postprocessing`): bloom sutil e vinheta leve.
 
 ### Direção visual validada
 
@@ -359,20 +363,53 @@ Prompts e regras de produção estão em `docs/asset-prompts.md`. Licenças e mo
 devem ser registradas em `ASSET_CREDITS.md`. Para Meshy Free, manter atribuição CC BY 4.0
 e indicar modificações.
 
+### Polimento de movimentação e gráficos (30 de agosto de 2026)
+
+- `@react-three/fiber` atualizado para 9.7.0 (exigência de peer dependency do
+  `@react-three/postprocessing`); `@react-three/postprocessing` e `postprocessing`
+  adicionados como dependências.
+- `Boat.tsx`: decaimento de velocidade mais rápido ao soltar as teclas (menos deslize);
+  colisão com a ilha e com os limites do mapa agora reduz a velocidade
+  exponencialmente e reposiciona o barco na borda em vez de reverter a posição e
+  inverter a velocidade (evitava o "trava seco" relatado).
+- `OdysseyScene.tsx`: `<Environment preset="sunset">` foi removido. Foi a causa de um
+  bug real encontrado nesta sessão — o carregamento do HDRI faz duas requisições
+  concorrentes (`raw.githack.com` e `raw.githubusercontent.com`); quando a segunda
+  fica pendente indefinidamente, o `Suspense` trava e a cena nunca renderiza (tela
+  preta, sem erro no console). A iluminação foi compensada com `hemisphereLight` e
+  ajuste de intensidade, sem depender de rede.
+- `Sea.tsx`: shader ganhou normal computada por diferenças finitas, brilho especular
+  (sol), fresnel e espuma nas cristas.
+- `App.tsx`: `shadows={{ type: THREE.PCFShadowMap }}` explícito, elimina o aviso de
+  depreciação de `PCFSoftShadowMap`.
+- Validado visualmente no Chrome real via `claude-in-chrome` (não headless): tela
+  inicial, navegação e entrada na caverna renderizam corretamente após o ajuste.
+  Observação de ambiente: screenshots tirados imediatamente após um `navigate` podem
+  sair pretos porque o frame WebGL ainda não foi compositado — um pequeno `wait` ou
+  interação antes do screenshot resolve; não é um bug do jogo.
+- Teste automatizado de movimentação/inércia via CDP não foi conclusivo: o
+  `requestAnimationFrame` é throttled quando a aba não está em primeiro plano de
+  verdade, então 8s de tempo real não avançam a simulação na mesma proporção.
+  Recomenda-se validar a sensação de inércia jogando diretamente em uma janela do
+  Chrome focada pelo usuário.
+
 ### Próximos passos exatos
 
-1. Restaurar a autenticação com `gh auth login -h github.com`.
-2. Criar um checkout funcional de `GustavoECocchi/Odisseia`, importar este workspace,
-   revisar o diff e publicar o primeiro commit.
-3. Validar manualmente a escolha "Ninguém", os objetos 3D e o retorno ao barco.
-4. Estender `npm run check:browser` para cobrir o puzzle completo.
-5. Preparar a pasta pública de modelos e um componente de carregamento de GLBs.
-6. Gerar o primeiro asset no Meshy usando o prompt do barco.
-7. Substituir o barco procedural mantendo fallback, escala e orientação consistentes.
-8. Repetir o pipeline com Polifemo, ovelha, ânfora e oliveira.
-9. Dividir o bundle por cena antes de adicionar vários GLBs.
-10. Avaliar e eliminar os avisos de depreciação de Three/R3F.
-11. Desenvolver o cais de Tróia e a interação de partida.
+1. Jogar manualmente numa janela Chrome focada para validar a sensação de inércia e
+   colisão do barco (não confirmado por automação nesta sessão — ver observação acima).
+2. Validar manualmente a escolha "Ninguém", os objetos 3D e o retorno ao barco.
+3. Estender `npm run check:browser` para cobrir o puzzle completo. Observação: os
+   objetos clicáveis da caverna (vinho, estaca, ovelha) ficam parcialmente atrás do
+   painel de HUD ou fora da tela nessa posição de câmera fixa — mapear os pontos de
+   clique corretos (ou ajustar a câmera/HUD) antes de automatizar os cliques.
+4. Preparar a pasta pública de modelos e um componente de carregamento de GLBs.
+5. Gerar o primeiro asset no Meshy usando o prompt do barco.
+6. Substituir o barco procedural mantendo fallback, escala e orientação consistentes.
+7. Repetir o pipeline com Polifemo, ovelha, ânfora e oliveira.
+8. Dividir o bundle por cena antes de adicionar vários GLBs.
+9. Avaliar e eliminar o aviso de depreciação de `THREE.Clock` (interno ao
+   `@react-three/fiber` 9.7.0; não há como corrigir só pelo código da aplicação).
+10. Desenvolver o cais de Tróia e a interação de partida.
 
 ### Continuidade entre sessões
 

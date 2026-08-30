@@ -1,4 +1,5 @@
-import { Environment, Sky } from "@react-three/drei";
+import { Sky } from "@react-three/drei";
+import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
 import type { RefObject } from "react";
 import { Boat } from "./Boat";
 import { PolyphemusIsland } from "./PolyphemusIsland";
@@ -33,13 +34,19 @@ export function OdysseyScene({
     <>
       <color attach="background" args={["#8fc8cf"]} />
       <fog attach="fog" args={["#78b7c0", 28, 82]} />
-      <ambientLight intensity={1.25} color="#bcd5d2" />
+      <ambientLight intensity={0.55} color="#bcd5d2" />
+      <hemisphereLight
+        color="#dff1ee"
+        groundColor="#2f6a5c"
+        intensity={0.4}
+      />
       <directionalLight
         position={[-12, 18, 9]}
-        intensity={2.6}
+        intensity={3.1}
         color="#ffe3a8"
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.0004}
         shadow-camera-left={-28}
         shadow-camera-right={28}
         shadow-camera-top={28}
@@ -53,7 +60,15 @@ export function OdysseyScene({
         turbidity={7}
         rayleigh={1.8}
       />
-      <Environment preset="sunset" environmentIntensity={0.22} />
+      <EffectComposer multisampling={0}>
+        <Bloom
+          luminanceThreshold={1.1}
+          luminanceSmoothing={0.2}
+          intensity={0.3}
+          mipmapBlur
+        />
+        <Vignette eskil={false} offset={0.12} darkness={0.4} />
+      </EffectComposer>
 
       <Sea />
       <PolyphemusIsland />
