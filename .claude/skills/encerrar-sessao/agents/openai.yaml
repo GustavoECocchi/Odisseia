@@ -1,0 +1,4 @@
+interface:
+  display_name: "Encerrar sessão"
+  short_description: "Valida, documenta, commita e envia a sessão"
+  default_prompt: "Encerre a sessão atual com validação, documentação honesta, commit e push."
